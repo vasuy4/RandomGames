@@ -40,7 +40,7 @@ class PieChart:
         end = self.draw_racetrack()
         if not end:
             self.total = sum(self.data)
-            self.root.after(5, self.draw_pie_chart)
+            self.root.after(1, self.draw_pie_chart)
 
     def random_data(self):
         for i_elem in range(self.lengthData):
@@ -50,18 +50,24 @@ class PieChart:
             # if self.data[i_elem] == max(self.data):
             #     self.data[i_elem] -= self.data[i_elem] / 10
 
+            sortedScoreboard = dict(sorted(self.scoreboard.items(), key=lambda item: item[1], reverse=True))
+            places = dict()
+            i_place = 1
+            for color, score in sortedScoreboard.items():
+                places[color] = i_place
+                i_place += 1
+
             chance_multi = random.randint(0, 19)
             if chance_multi % 5 == 0:
-                self.data[i_elem] *= 1.0001
+                # self.data[i_elem] *= 1.0001
+                self.data[i_elem] *= 1 + places[self.colors[i_elem]] / 100
             elif chance_multi == 13:
                 self.data[i_elem] *= random.random()
             if chance_multi == 7:
-                self.data[i_elem] *= (random.random() + 1) + self.luckyMulti[i_elem] / 5
+                self.data[i_elem] *= (random.random() + 1) + self.luckyMulti[i_elem] / 3
                 self.luckyMulti[i_elem] += 1
                 if self.luckyMulti[i_elem] > 1:
                     s = "{} Combo x{} for {}\n".format(datetime.datetime.now().time(), self.luckyMulti[i_elem], self.colors[i_elem])
-                    with open("combo.txt", 'a') as f:
-                        f.write(s)
                     print(s, end='')
             else:
                 self.luckyMulti[i_elem] = 0
