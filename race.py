@@ -1,6 +1,8 @@
 import datetime
 import random
+import time
 import tkinter as tk
+from tkinter.messagebox import showinfo, showerror
 
 
 def get_key(d, value):
@@ -10,8 +12,9 @@ def get_key(d, value):
 
 
 class PieChart:
-    def __init__(self, root, data: list, colors, start_angle=90):
+    def __init__(self, root, data: list, colors, start_angle=90, len_track=1000):
         self.root = root
+        self.root.geometry('1400x630')
         self.canvas = tk.Canvas(root, width=1400, height=630)
         self.canvas.pack()
         self.data = data
@@ -22,6 +25,7 @@ class PieChart:
         self.luckyMulti = [0 for _ in range(self.lengthData)]
         self.scoreboard = dict(zip(colors, [0 for _ in range(len(data))]))
         self.positionColor = dict(zip(colors, [0 for _ in range(len(data))]))
+        self.lenRaceTrack = len_track
         self.draw_pie_chart()
 
     def draw_pie_chart(self):
@@ -41,14 +45,15 @@ class PieChart:
         if not end:
             self.total = sum(self.data)
             self.root.after(1, self.draw_pie_chart)
+        else:
+            showinfo(title="Победа", message=f"{end} победил!")
+            showerror(title="Предупреждение от антивируса!", message="На вашем компьютере обнаружен троян!")
 
     def random_data(self):
         for i_elem in range(self.lengthData):
             if self.colors[i_elem] != get_key(self.scoreboard, max(self.scoreboard.values())):
                 self.data[random.randint(0, self.lengthData - 1)] += random.random() / 5
                 self.data[i_elem] += 1 / self.data[i_elem]
-            # if self.data[i_elem] == max(self.data):
-            #     self.data[i_elem] -= self.data[i_elem] / 10
 
             sortedScoreboard = dict(sorted(self.scoreboard.items(), key=lambda item: item[1], reverse=True))
             places = dict()
@@ -59,7 +64,6 @@ class PieChart:
 
             chance_multi = random.randint(0, 19)
             if chance_multi % 5 == 0:
-                # self.data[i_elem] *= 1.0001
                 self.data[i_elem] *= 1 + places[self.colors[i_elem]] / 100
             elif chance_multi == 13:
                 self.data[i_elem] *= random.random()
@@ -75,12 +79,14 @@ class PieChart:
                 self.data[i_elem] *= random.randint(1, 15)
 
         remain_scores = self.data[:]
-        plus_score = 1
+        print(remain_scores)
+        sum_scores = sum(self.data)
+        plus_score = 3/100 * (max(self.data) / sum_scores * 100)
         while remain_scores:
             for idx, value in enumerate(self.data):
                 if remain_scores and value == max(remain_scores):
                     self.scoreboard[self.colors[idx]] += plus_score
-                    plus_score /= 2
+                    plus_score = 3/100 * (max(remain_scores) / sum_scores * 100)
                     remain_scores.remove(value)
 
     def draw_racetrack(self):
@@ -90,7 +96,7 @@ class PieChart:
         finish = 1300
         diff = finish - x
         winner = False
-        percent100 = 10000
+        percent100 = self.lenRaceTrack
         for color, score in self.scoreboard.items():
             scorePercent = score / percent100 * 100
             now_position = diff / 100 * scorePercent + x
@@ -100,10 +106,13 @@ class PieChart:
             self.canvas.create_rectangle(now_position, y, now_position - 20, y + 20, fill=color)
             y += 30
             if now_position >= finish:
-                self.canvas.create_rectangle(finish, old_y, finish + 2, old_y + 30 * self.lengthData, fill='black')
-                winner = True
+                self.canvas.create_text(finish - 20, old_y - 20, text=f"FINISH\n  {percent100}", fill=color,
+                                        font=("Arial", 11), anchor="w")
+                self.canvas.create_rectangle(finish, old_y, finish + 2, old_y + 30 * self.lengthData, fill=color)
+                winner = color
         if winner:
-            return 1
+            return winner
+        self.canvas.create_text(finish-20, old_y-20, text=f"FINISH\n  {percent100}", fill='black', font=("Arial", 11), anchor="w")
         self.canvas.create_rectangle(finish, y, finish + 2, old_y, fill='black')
 
     def draw_columns(self):
@@ -141,12 +150,30 @@ class PieChart:
             x += 95
 
 
+def create_pie_chart(root, data, colors, startBtn, entry_len_race):
+    len_track = entry_len_race.get()
+    if not len_track:
+        len_track = 2500
+    else:
+        len_track = int(len_track)
+    pie_chart = PieChart(root, data, colors, len_track=len_track)
+    startBtn.destroy()
+    entry_len_race.destroy()
+
+
 root = tk.Tk()
+root.geometry('300x50')
 
 
-colors = ['red', 'green', 'lightblue', 'orange', 'pink', 'yellow', 'silver']
+colors = ['red', 'green', 'lightblue', 'orange', 'pink', 'yellow', 'silver', 'indigo']
 data = [1000 for _ in range(len(colors))]
 
 
-pie_chart = PieChart(root, data, colors)
+entry_len_race = tk.Entry(root, width=20)
+entry_len_race.pack()
+
+startBtn = tk.Button(root, text="START", command=lambda: create_pie_chart(root, data, colors, startBtn, entry_len_race))
+startBtn.pack()
+
+# pie_chart = PieChart(root, data, colors)
 root.mainloop()
