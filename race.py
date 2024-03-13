@@ -37,6 +37,12 @@ class PieChart:
             horseImage = ImageTk.PhotoImage(img)
             self.horse_images[colors[i]] = horseImage
 
+            name_face_file = "{direct}/images/horses/{color}Face.png".format(direct=getcwd(), color=colors[i])
+            imgFace = Image.open(name_face_file)
+            imgFace = imgFace.resize((20, 20))
+            faceImage = ImageTk.PhotoImage(imgFace)
+            self.horse_images[colors[i] + "Face"] = faceImage
+
         self.draw_pie_chart()
 
     def draw_pie_chart(self):
@@ -120,7 +126,6 @@ class PieChart:
                 self.positionColor[color] = x
             self.positionColor[color] = now_position
 
-
             horseImage = self.horse_images[color]
             self.canvas.create_image(now_position, y, image=horseImage, anchor='nw')
 
@@ -153,7 +158,10 @@ class PieChart:
         y = 5
         sorted_dict = dict(sorted(self.scoreboard.items(), key=lambda item: item[1], reverse=True))
         for color, score in sorted_dict.items():
-            self.canvas.create_rectangle(x, y, x + 20, y + 20, fill=color)
+            # self.canvas.create_rectangle(x, y, x + 20, y + 20, fill=color)
+            horseImage = self.horse_images[color + "Face"]
+            self.canvas.create_image(x, y, image=horseImage, anchor='nw')
+
             self.canvas.create_text(x + 30, y + 10, text=f"{round(score, 2)}", fill="black", font=("Arial", 11), anchor="w")
             y += 30
 
@@ -173,39 +181,45 @@ class PieChart:
             x += 85
 
 
-def create_pie_chart(root, data, colors, startBtn, entry_len_race, labelChoose, colorLabels):
+def create_pie_chart(root, data, colors, startBtn, entry_len_race, labelChoose, colorLabels, imageLabels):
     len_track = entry_len_race.get()
     if not len_track:
         len_track = 2500
     else:
         len_track = int(len_track)
-    pie_chart = PieChart(root, data, colors, len_track=len_track)
     startBtn.destroy()
     entry_len_race.destroy()
     labelChoose.destroy()
     for i_label in colorLabels:
         i_label.destroy()
+    for i_label in imageLabels:
+        i_label.destroy()
+
+    pie_chart = PieChart(root, data, colors, len_track=len_track)
 
 
 root = tk.Tk()
-root.geometry('600x650')
+root.geometry('860x860')
 
 
 colors = ['red', 'green', 'lightblue', 'orange', 'pink', 'yellow', 'silver', 'indigo', 'cyan', 'snow', 'springgreen', 'chocolate']
+colorsName = {'red': 'Blood', 'green': 'Nature', 'lightblue': 'Ice', 'orange': 'Flame', 'pink': 'Rose', 'yellow': 'Lemon',
+              'silver':'Steel dick', 'indigo':'Night', 'cyan':'Wave', 'snow':'Snow', 'springgreen':'Toxic', 'chocolate':'Chocolate'}
 data = [1000 for _ in range(len(colors))]
 
 
 colorLabels = list()
 imageLabels = []
 
-image_files = ['{}/images/horses/'.format(getcwd()) + color + '.png' for color in colors]
+image_files = ['{}/images/horses/'.format(getcwd()) + color + 'Face.png' for color in colors]
 images = [tk.PhotoImage(file=image_file) for image_file in image_files]
 
 row_index = 0
 column_index = 0
 
 for i_color, image in zip(colors, images):
-    labelColor = ttk.Label(root, text=i_color, font='Times 20', background=i_color)
+    name = colorsName[i_color]
+    labelColor = ttk.Label(root, text=name, font='Times 20', background=i_color)
     labelColor.grid(row=column_index, column=2 * (row_index % 3), padx=5, pady=5)
     colorLabels.append(labelColor)
 
@@ -234,7 +248,7 @@ entry_len_race.grid(row=1, column=5)
 
 startBtn = tk.Button(root, text="START", font='Times 20', command=lambda: create_pie_chart(root, data, colors, startBtn,
                                                                                            entry_len_race, labelChoose,
-                                                                                           colorLabels))
+                                                                                           colorLabels, imageLabels))
 startBtn.grid(row=2, column=5)
 
 root.mainloop()
