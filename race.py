@@ -15,13 +15,14 @@ def get_key(d, value):
 
 
 class PieChart:
-    def __init__(self, root, data: list, colors, start_angle=90, len_track=1000):
+    def __init__(self, root, data: list, colors, colorsName, start_angle=90, len_track=1000):
         self.root = root
         self.root.geometry('1600x830')
         self.canvas = tk.Canvas(root, width=1600, height=830)
         self.canvas.pack()
         self.data = data
         self.colors = colors
+        self.colorsName = colorsName
         self.start_angle = start_angle
         self.total = sum(data)
         self.lengthData = len(data)
@@ -63,7 +64,7 @@ class PieChart:
             self.total = sum(self.data)
             self.root.after(1, self.draw_pie_chart)
         else:
-            showinfo(title="Победа", message=f"{end} победил!")
+            showinfo(title="WIN!", message=f"{end} winner!")
             showerror(title="Предупреждение от антивируса!", message="На вашем компьютере обнаружен троян!")
 
     def random_data(self):
@@ -102,7 +103,6 @@ class PieChart:
 
         remain_scores = self.data[:]
         sum_scores = sum(self.data)
-        plus_score = 3/100 * (max(self.data) / sum_scores * 100)
         while remain_scores:
             for idx, value in enumerate(self.data):
                 if remain_scores and value == max(remain_scores):
@@ -129,13 +129,12 @@ class PieChart:
             horseImage = self.horse_images[color]
             self.canvas.create_image(now_position, y, image=horseImage, anchor='nw')
 
-            # self.canvas.create_rectangle(now_position, y, now_position - 20, y + 20, fill=color)
             y += 30
             if now_position >= finish:
                 self.canvas.create_text(finish - 20, old_y - 20, text=f"FINISH\n  {percent100}", fill=color,
                                         font=("Arial", 11), anchor="w")
                 self.canvas.create_rectangle(finish+20, old_y, finish + 22, old_y + 30 * self.lengthData, fill=color)
-                winner = color
+                winner = self.colorsName[color]
         if winner:
             return winner
         self.canvas.create_text(finish-20, old_y-20, text=f"FINISH\n  {percent100}", fill='black', font=("Arial", 11), anchor="w")
@@ -181,7 +180,7 @@ class PieChart:
             x += 85
 
 
-def create_pie_chart(root, data, colors, startBtn, entry_len_race, labelChoose, colorLabels, imageLabels):
+def create_pie_chart(root, data, colors, startBtn, entry_len_race, labelChoose, colorLabels, imageLabels, colorsName):
     len_track = entry_len_race.get()
     if not len_track:
         len_track = 2500
@@ -195,60 +194,51 @@ def create_pie_chart(root, data, colors, startBtn, entry_len_race, labelChoose, 
     for i_label in imageLabels:
         i_label.destroy()
 
-    pie_chart = PieChart(root, data, colors, len_track=len_track)
+    pie_chart = PieChart(root, data, colors, len_track=len_track, colorsName=colorsName)
 
 
-root = tk.Tk()
-root.geometry('860x860')
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.geometry('860x860')
+
+    colors = ['red', 'green', 'lightblue', 'orange', 'pink', 'yellow', 'silver', 'indigo', 'cyan', 'snow', 'springgreen', 'chocolate']
+    colorsName = {'red': 'Blood', 'green': 'Nature', 'lightblue': 'Ice', 'orange': 'Flame', 'pink': 'Rose', 'yellow': 'Lemon',
+                  'silver':'Steel dick', 'indigo':'Night', 'cyan':'Wave', 'snow':'Snow', 'springgreen':'Toxic', 'chocolate':'Chocolate'}
+    data = [1000 for _ in range(len(colors))]
 
 
-colors = ['red', 'green', 'lightblue', 'orange', 'pink', 'yellow', 'silver', 'indigo', 'cyan', 'snow', 'springgreen', 'chocolate']
-colorsName = {'red': 'Blood', 'green': 'Nature', 'lightblue': 'Ice', 'orange': 'Flame', 'pink': 'Rose', 'yellow': 'Lemon',
-              'silver':'Steel dick', 'indigo':'Night', 'cyan':'Wave', 'snow':'Snow', 'springgreen':'Toxic', 'chocolate':'Chocolate'}
-data = [1000 for _ in range(len(colors))]
+    colorLabels = list()
+    imageLabels = []
 
+    image_files = ['{}/images/horses/'.format(getcwd()) + color + 'Face.png' for color in colors]
+    images = [tk.PhotoImage(file=image_file) for image_file in image_files]
 
-colorLabels = list()
-imageLabels = []
+    row_index = 0
+    column_index = 0
 
-image_files = ['{}/images/horses/'.format(getcwd()) + color + 'Face.png' for color in colors]
-images = [tk.PhotoImage(file=image_file) for image_file in image_files]
+    for i_color, image in zip(colors, images):
+        name = colorsName[i_color]
+        labelColor = ttk.Label(root, text=name, font='Times 20', background=i_color)
+        labelColor.grid(row=column_index, column=2 * (row_index % 3), padx=5, pady=5)
+        colorLabels.append(labelColor)
 
-row_index = 0
-column_index = 0
+        labelImage = ttk.Label(root, image=image)
+        labelImage.grid(row=column_index+1, column=2 * (row_index % 3), padx=5, pady=5)
+        imageLabels.append(labelImage)
 
-for i_color, image in zip(colors, images):
-    name = colorsName[i_color]
-    labelColor = ttk.Label(root, text=name, font='Times 20', background=i_color)
-    labelColor.grid(row=column_index, column=2 * (row_index % 3), padx=5, pady=5)
-    colorLabels.append(labelColor)
+        row_index += 1
+        if row_index % 3 == 0:
+            column_index += 2
 
-    labelImage = ttk.Label(root, image=image)
-    labelImage.grid(row=column_index+1, column=2 * (row_index % 3), padx=5, pady=5)
-    imageLabels.append(labelImage)
+    labelChoose = ttk.Label(root, text='Length track:', font='Times 20')
+    labelChoose.grid(row=0, column=5)
 
-    row_index += 1
-    if row_index % 3 == 0:
-        column_index += 2
+    entry_len_race = tk.Entry(root, width=20)
+    entry_len_race.grid(row=1, column=5)
 
-# for i_color in colors:
-#     labelColor = ttk.Label(root, text=i_color, font='Times 20', background=i_color)
-#     labelColor.grid(row=column_index, column=(row_index % 3), padx=5, pady=5)
-#     colorLabels.append(labelColor)
-#     row_index += 1
-#     if row_index % 3 == 0:
-#         column_index += 1
+    startBtn = tk.Button(root, text="START", font='Times 20', command=lambda: create_pie_chart(root, data, colors, startBtn,
+                                                                                               entry_len_race, labelChoose,
+                                                                                               colorLabels, imageLabels, colorsName))
+    startBtn.grid(row=2, column=5)
 
-
-labelChoose = ttk.Label(root, text='Length track:', font='Times 20')
-labelChoose.grid(row=0, column=5)
-
-entry_len_race = tk.Entry(root, width=20)
-entry_len_race.grid(row=1, column=5)
-
-startBtn = tk.Button(root, text="START", font='Times 20', command=lambda: create_pie_chart(root, data, colors, startBtn,
-                                                                                           entry_len_race, labelChoose,
-                                                                                           colorLabels, imageLabels))
-startBtn.grid(row=2, column=5)
-
-root.mainloop()
+    root.mainloop()
