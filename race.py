@@ -3,7 +3,7 @@ import random
 import time
 import tkinter as tk
 from tkinter.messagebox import showinfo, showerror
-
+from tkinter import ttk
 
 def get_key(d, value):
     for k, v in d.items():
@@ -59,7 +59,7 @@ class PieChart:
             places = dict()
             i_place = 1
             for color, score in sortedScoreboard.items():
-                places[color] = i_place
+                places[color] = i_place  # цвет и место в рейтинге гонки, 1-ое место -> i_place=1
                 i_place += 1
 
             chance_multi = random.randint(0, 19)
@@ -79,7 +79,6 @@ class PieChart:
                 self.data[i_elem] *= random.randint(1, 15)
 
         remain_scores = self.data[:]
-        print(remain_scores)
         sum_scores = sum(self.data)
         plus_score = 3/100 * (max(self.data) / sum_scores * 100)
         while remain_scores:
@@ -150,7 +149,7 @@ class PieChart:
             x += 95
 
 
-def create_pie_chart(root, data, colors, startBtn, entry_len_race):
+def create_pie_chart(root, data, colors, startBtn, entry_len_race, labelChoose, colorLabels):
     len_track = entry_len_race.get()
     if not len_track:
         len_track = 2500
@@ -159,21 +158,35 @@ def create_pie_chart(root, data, colors, startBtn, entry_len_race):
     pie_chart = PieChart(root, data, colors, len_track=len_track)
     startBtn.destroy()
     entry_len_race.destroy()
+    labelChoose.destroy()
+    for i_label in colorLabels:
+        i_label.destroy()
 
 
 root = tk.Tk()
-root.geometry('300x50')
+root.geometry('300x450')
 
 
-colors = ['red', 'green', 'lightblue', 'orange', 'pink', 'yellow', 'silver', 'indigo']
+colors = ['red', 'green', 'lightblue', 'orange', 'pink', ]#'yellow', 'silver', 'indigo']
 data = [1000 for _ in range(len(colors))]
 
 
 entry_len_race = tk.Entry(root, width=20)
 entry_len_race.pack()
 
-startBtn = tk.Button(root, text="START", command=lambda: create_pie_chart(root, data, colors, startBtn, entry_len_race))
+labelChoose = ttk.Label(root, text='Colors:', font='Times 20')
+labelChoose.pack()
+colorLabels = list()
+for i_color in colors:
+    labelColor = ttk.Label(root, text=i_color, font='Times 20', background=i_color)
+    labelColor.pack()
+    colorLabels.append(labelColor)
+
+startBtn = tk.Button(root, text="START", font='Times 20', command=lambda: create_pie_chart(root, data, colors, startBtn,
+                                                                                           entry_len_race, labelChoose,
+                                                                                           colorLabels))
 startBtn.pack()
+
 
 # pie_chart = PieChart(root, data, colors)
 root.mainloop()
