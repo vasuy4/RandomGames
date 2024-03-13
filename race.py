@@ -4,6 +4,7 @@ import time
 import tkinter as tk
 from tkinter.messagebox import showinfo, showerror
 from tkinter import ttk
+from PIL import Image, ImageTk
 
 
 def get_key(d, value):
@@ -27,7 +28,13 @@ class PieChart:
         self.scoreboard = dict(zip(colors, [0 for _ in range(len(data))]))
         self.positionColor = dict(zip(colors, [0 for _ in range(len(data))]))
         self.lenRaceTrack = len_track
-        self.horse_images = []
+        self.horse_images = {}
+        for i in range(len(data)):
+            img = Image.open("images/horses/testHorse.jpg")
+            img = img.resize((20, 20))
+            horseImage = ImageTk.PhotoImage(img)
+            self.horse_images[colors[i]] = horseImage
+
         self.draw_pie_chart()
 
     def draw_pie_chart(self):
@@ -104,7 +111,6 @@ class PieChart:
         winner = False
         percent100 = self.lenRaceTrack
 
-        self.horse_images = []
         for color, score in self.scoreboard.items():
             scorePercent = score / percent100 * 100
             now_position = diff / 100 * scorePercent + x
@@ -112,11 +118,11 @@ class PieChart:
                 self.positionColor[color] = x
             self.positionColor[color] = now_position
 
-            # horseImage = tk.PhotoImage(file="images/horses/horsess.png")
-            # self.canvas.create_image(now_position, y, image=horseImage, anchor='nw')
-            # self.horse_images.append(horseImage)
 
-            self.canvas.create_rectangle(now_position, y, now_position - 20, y + 20, fill=color)
+            horseImage = self.horse_images['pink']
+            self.canvas.create_image(now_position, y, image=horseImage, anchor='nw')
+
+            # self.canvas.create_rectangle(now_position, y, now_position - 20, y + 20, fill=color)
             y += 30
             if now_position >= finish:
                 self.canvas.create_text(finish - 20, old_y - 20, text=f"FINISH\n  {percent100}", fill=color,
