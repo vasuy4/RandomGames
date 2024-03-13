@@ -5,11 +5,11 @@ import tkinter as tk
 from tkinter.messagebox import showinfo, showerror
 from tkinter import ttk
 
+
 def get_key(d, value):
     for k, v in d.items():
         if v == value:
             return k
-
 
 class PieChart:
     def __init__(self, root, data: list, colors, start_angle=90, len_track=1000):
@@ -26,6 +26,7 @@ class PieChart:
         self.scoreboard = dict(zip(colors, [0 for _ in range(len(data))]))
         self.positionColor = dict(zip(colors, [0 for _ in range(len(data))]))
         self.lenRaceTrack = len_track
+        self.horse_images = []
         self.draw_pie_chart()
 
     def draw_pie_chart(self):
@@ -96,19 +97,27 @@ class PieChart:
         diff = finish - x
         winner = False
         percent100 = self.lenRaceTrack
+
+        self.horse_images = []
         for color, score in self.scoreboard.items():
             scorePercent = score / percent100 * 100
             now_position = diff / 100 * scorePercent + x
             if self.positionColor[color] == 0:
                 self.positionColor[color] = x
             self.positionColor[color] = now_position
-            self.canvas.create_rectangle(now_position, y, now_position - 20, y + 20, fill=color)
+
+            horseImage = tk.PhotoImage(file="images/horses/horsess.png")
+            self.canvas.create_image(now_position, y, image=horseImage, anchor='nw')
+            self.horse_images.append(horseImage)
+            # self.canvas.create_image(now_position, y, anchor=tk.NW, image=horseImage)
+            # self.canvas.create_rectangle(now_position, y, now_position - 20, y + 20, fill=color)
             y += 30
             if now_position >= finish:
                 self.canvas.create_text(finish - 20, old_y - 20, text=f"FINISH\n  {percent100}", fill=color,
                                         font=("Arial", 11), anchor="w")
                 self.canvas.create_rectangle(finish, old_y, finish + 2, old_y + 30 * self.lengthData, fill=color)
                 winner = color
+        print(self.horse_images)
         if winner:
             return winner
         self.canvas.create_text(finish-20, old_y-20, text=f"FINISH\n  {percent100}", fill='black', font=("Arial", 11), anchor="w")
@@ -187,6 +196,10 @@ startBtn = tk.Button(root, text="START", font='Times 20', command=lambda: create
                                                                                            colorLabels))
 startBtn.pack()
 
+# canv = tk.Canvas(root, width=1400, height=630)
+# canv.pack()
+# horseImage = tk.PhotoImage(file="images/horses/horsess.png")
+# canv.create_image(120, 1, image=horseImage, anchor='nw')
 
 # pie_chart = PieChart(root, data, colors)
 root.mainloop()
