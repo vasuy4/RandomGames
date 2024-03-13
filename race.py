@@ -11,11 +11,12 @@ def get_key(d, value):
         if v == value:
             return k
 
+
 class PieChart:
     def __init__(self, root, data: list, colors, start_angle=90, len_track=1000):
         self.root = root
-        self.root.geometry('1400x630')
-        self.canvas = tk.Canvas(root, width=1400, height=630)
+        self.root.geometry('1600x830')
+        self.canvas = tk.Canvas(root, width=1600, height=830)
         self.canvas.pack()
         self.data = data
         self.colors = colors
@@ -34,7 +35,7 @@ class PieChart:
         end_angle = self.start_angle
         for idx, value in enumerate(self.data):
             slice_angle = 360 * value / self.total
-            self.canvas.create_arc(10, 10, 590, 590, start=end_angle, extent=slice_angle, fill=self.colors[idx])
+            self.canvas.create_arc(10, 10, 790, 790, start=end_angle, extent=slice_angle, fill=self.colors[idx])
 
             end_angle += slice_angle
 
@@ -63,7 +64,12 @@ class PieChart:
                 places[color] = i_place  # цвет и место в рейтинге гонки, 1-ое место -> i_place=1
                 i_place += 1
 
-            chance_multi = random.randint(0, 19)
+            if max(places.values()) > 6 and self.lenRaceTrack < 5001:
+                minus = places[self.colors[i_elem]]
+            else:
+                minus = 0
+
+            chance_multi = random.randint(0, 19 - minus)
             if chance_multi % 5 == 0:
                 self.data[i_elem] *= 1 + places[self.colors[i_elem]] / 100
             elif chance_multi == 13:
@@ -85,15 +91,15 @@ class PieChart:
         while remain_scores:
             for idx, value in enumerate(self.data):
                 if remain_scores and value == max(remain_scores):
-                    self.scoreboard[self.colors[idx]] += plus_score
                     plus_score = 3/100 * (max(remain_scores) / sum_scores * 100)
+                    self.scoreboard[self.colors[idx]] += plus_score + random.random() / 2
                     remain_scores.remove(value)
 
     def draw_racetrack(self):
-        x = 620
-        old_y = 280
-        y = 280
-        finish = 1300
+        x = 820
+        y = 410
+        old_y = y
+        finish = 1550
         diff = finish - x
         winner = False
         percent100 = self.lenRaceTrack
@@ -106,27 +112,26 @@ class PieChart:
                 self.positionColor[color] = x
             self.positionColor[color] = now_position
 
-            horseImage = tk.PhotoImage(file="images/horses/horsess.png")
-            self.canvas.create_image(now_position, y, image=horseImage, anchor='nw')
-            self.horse_images.append(horseImage)
-            # self.canvas.create_image(now_position, y, anchor=tk.NW, image=horseImage)
-            # self.canvas.create_rectangle(now_position, y, now_position - 20, y + 20, fill=color)
+            # horseImage = tk.PhotoImage(file="images/horses/horsess.png")
+            # self.canvas.create_image(now_position, y, image=horseImage, anchor='nw')
+            # self.horse_images.append(horseImage)
+
+            self.canvas.create_rectangle(now_position, y, now_position - 20, y + 20, fill=color)
             y += 30
             if now_position >= finish:
                 self.canvas.create_text(finish - 20, old_y - 20, text=f"FINISH\n  {percent100}", fill=color,
                                         font=("Arial", 11), anchor="w")
                 self.canvas.create_rectangle(finish, old_y, finish + 2, old_y + 30 * self.lengthData, fill=color)
                 winner = color
-        print(self.horse_images)
         if winner:
             return winner
         self.canvas.create_text(finish-20, old_y-20, text=f"FINISH\n  {percent100}", fill='black', font=("Arial", 11), anchor="w")
         self.canvas.create_rectangle(finish, y, finish + 2, old_y, fill='black')
 
     def draw_columns(self):
-        x = 680
+        x = 880
         y = 5
-        diff = 1400 - x
+        diff = self.canvas.winfo_width() - 50 - x
         sorted_dict = dict(sorted(self.scoreboard.items(), key=lambda item: item[1], reverse=True))
         percent100 = list(sorted_dict.values())[0]
         for color, score in sorted_dict.items():
@@ -136,7 +141,7 @@ class PieChart:
             y += 30
 
     def draw_scoreboard(self):
-        x = 590
+        x = 800
         y = 5
         sorted_dict = dict(sorted(self.scoreboard.items(), key=lambda item: item[1], reverse=True))
         for color, score in sorted_dict.items():
@@ -146,16 +151,18 @@ class PieChart:
 
     def draw_legend(self):
         x = 10
-        y = 590
+        y = 800
         new_dict = {}
         for idx, value in enumerate(self.data):
             new_dict[self.colors[idx]] = value
 
         sort_dict = dict(sorted(new_dict.items(), key=lambda item: item[1], reverse=True))
+        total_sum = sum(self.data)
         for color, value in sort_dict.items():
+            percent = value / total_sum * 100
             self.canvas.create_rectangle(x, y, x + 20, y + 20, fill=color)
-            self.canvas.create_text(x + 30, y + 10, text=f"{round(value, 2)}", fill="black", font=("Arial", 11), anchor="w")
-            x += 95
+            self.canvas.create_text(x + 30, y + 10, text=f"{round(percent, 2)}%", fill="black", font=("Arial", 11), anchor="w")
+            x += 85
 
 
 def create_pie_chart(root, data, colors, startBtn, entry_len_race, labelChoose, colorLabels):
@@ -173,10 +180,10 @@ def create_pie_chart(root, data, colors, startBtn, entry_len_race, labelChoose, 
 
 
 root = tk.Tk()
-root.geometry('300x450')
+root.geometry('300x550')
 
 
-colors = ['red', 'green', 'lightblue', 'orange', 'pink', ]#'yellow', 'silver', 'indigo']
+colors = ['red', 'green', 'lightblue', 'orange', 'pink', 'yellow', 'silver', 'indigo', 'cyan', 'snow', 'springgreen', 'chocolate']
 data = [1000 for _ in range(len(colors))]
 
 
@@ -196,10 +203,4 @@ startBtn = tk.Button(root, text="START", font='Times 20', command=lambda: create
                                                                                            colorLabels))
 startBtn.pack()
 
-# canv = tk.Canvas(root, width=1400, height=630)
-# canv.pack()
-# horseImage = tk.PhotoImage(file="images/horses/horsess.png")
-# canv.create_image(120, 1, image=horseImage, anchor='nw')
-
-# pie_chart = PieChart(root, data, colors)
 root.mainloop()
