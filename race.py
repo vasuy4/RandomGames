@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter.messagebox import showinfo, showerror
 from tkinter import ttk
 from PIL import Image, ImageTk
+from os import getcwd
 
 
 def get_key(d, value):
@@ -30,7 +31,7 @@ class PieChart:
         self.lenRaceTrack = len_track
         self.horse_images = {}
         for i in range(len(data)):
-            name_file = "E:/Projects/PythonProjects/Random/RandomGames/images/horses/{color}.png".format(color=colors[i])
+            name_file = "{direct}/images/horses/{color}.png".format(direct=getcwd(), color=colors[i])
             img = Image.open(name_file)
             img = img.resize((20, 20))
             horseImage = ImageTk.PhotoImage(img)
@@ -187,27 +188,53 @@ def create_pie_chart(root, data, colors, startBtn, entry_len_race, labelChoose, 
 
 
 root = tk.Tk()
-root.geometry('300x550')
+root.geometry('600x650')
 
 
 colors = ['red', 'green', 'lightblue', 'orange', 'pink', 'yellow', 'silver', 'indigo', 'cyan', 'snow', 'springgreen', 'chocolate']
 data = [1000 for _ in range(len(colors))]
 
 
-entry_len_race = tk.Entry(root, width=20)
-entry_len_race.pack()
-
-labelChoose = ttk.Label(root, text='Colors:', font='Times 20')
-labelChoose.pack()
 colorLabels = list()
-for i_color in colors:
+imageLabels = []
+
+image_files = ['{}/images/horses/'.format(getcwd()) + color + '.png' for color in colors]
+images = [tk.PhotoImage(file=image_file) for image_file in image_files]
+
+row_index = 0
+column_index = 0
+
+for i_color, image in zip(colors, images):
     labelColor = ttk.Label(root, text=i_color, font='Times 20', background=i_color)
-    labelColor.pack()
+    labelColor.grid(row=column_index, column=2 * (row_index % 3), padx=5, pady=5)
     colorLabels.append(labelColor)
+
+    labelImage = ttk.Label(root, image=image)
+    labelImage.grid(row=column_index+1, column=2 * (row_index % 3), padx=5, pady=5)
+    imageLabels.append(labelImage)
+
+    row_index += 1
+    if row_index % 3 == 0:
+        column_index += 2
+
+# for i_color in colors:
+#     labelColor = ttk.Label(root, text=i_color, font='Times 20', background=i_color)
+#     labelColor.grid(row=column_index, column=(row_index % 3), padx=5, pady=5)
+#     colorLabels.append(labelColor)
+#     row_index += 1
+#     if row_index % 3 == 0:
+#         column_index += 1
+
+
+labelChoose = ttk.Label(root, text='Length track:', font='Times 20')
+labelChoose.grid(row=0, column=5)
+
+entry_len_race = tk.Entry(root, width=20)
+entry_len_race.grid(row=1, column=5)
 
 startBtn = tk.Button(root, text="START", font='Times 20', command=lambda: create_pie_chart(root, data, colors, startBtn,
                                                                                            entry_len_race, labelChoose,
                                                                                            colorLabels))
-startBtn.pack()
+startBtn.grid(row=2, column=5)
 
 root.mainloop()
