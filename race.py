@@ -30,7 +30,8 @@ class PieChart:
         self.lenRaceTrack = len_track
         self.horse_images = {}
         for i in range(len(data)):
-            img = Image.open("images/horses/testHorse.jpg")
+            name_file = "E:/Projects/PythonProjects/Random/RandomGames/images/horses/{color}.png".format(color=colors[i])
+            img = Image.open(name_file)
             img = img.resize((20, 20))
             horseImage = ImageTk.PhotoImage(img)
             self.horse_images[colors[i]] = horseImage
@@ -119,7 +120,7 @@ class PieChart:
             self.positionColor[color] = now_position
 
 
-            horseImage = self.horse_images['pink']
+            horseImage = self.horse_images[color]
             self.canvas.create_image(now_position, y, image=horseImage, anchor='nw')
 
             # self.canvas.create_rectangle(now_position, y, now_position - 20, y + 20, fill=color)
@@ -127,12 +128,12 @@ class PieChart:
             if now_position >= finish:
                 self.canvas.create_text(finish - 20, old_y - 20, text=f"FINISH\n  {percent100}", fill=color,
                                         font=("Arial", 11), anchor="w")
-                self.canvas.create_rectangle(finish, old_y, finish + 2, old_y + 30 * self.lengthData, fill=color)
+                self.canvas.create_rectangle(finish+20, old_y, finish + 22, old_y + 30 * self.lengthData, fill=color)
                 winner = color
         if winner:
             return winner
         self.canvas.create_text(finish-20, old_y-20, text=f"FINISH\n  {percent100}", fill='black', font=("Arial", 11), anchor="w")
-        self.canvas.create_rectangle(finish, y, finish + 2, old_y, fill='black')
+        self.canvas.create_rectangle(finish+20, y, finish + 22, old_y, fill='black')
 
     def draw_columns(self):
         x = 880
