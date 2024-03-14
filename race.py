@@ -1,3 +1,4 @@
+
 import datetime
 import random
 import time
@@ -27,6 +28,7 @@ class PieChart:
         self.total = sum(data)
         self.lengthData = len(data)
         self.luckyMulti = [0 for _ in range(self.lengthData)]
+        self.bonusChance = [1 for _ in range(self.lengthData)]
         self.scoreboard = dict(zip(colors, [0 for _ in range(len(data))]))
         self.positionColor = dict(zip(colors, [0 for _ in range(len(data))]))
         self.lenRaceTrack = len_track
@@ -44,6 +46,8 @@ class PieChart:
             faceImage = ImageTk.PhotoImage(imgFace)
             self.horse_images[colors[i] + "Face"] = faceImage
 
+        self.totalIterations = 0
+        self.totalMultiChance = 0
         self.draw_pie_chart()
 
     def draw_pie_chart(self):
@@ -64,10 +68,24 @@ class PieChart:
             self.total = sum(self.data)
             self.root.after(1, self.draw_pie_chart)
         else:
+            print("Iters: {}, Count chance: {}, Average chance: {}%".format(self.totalIterations,
+                                                                            self.totalMultiChance, self.totalMultiChance / self.totalIterations * 100))
             showinfo(title="WIN!", message=f"{end} winner!")
             showerror(title="Предупреждение от антивируса!", message="На вашем компьютере обнаружен троян!")
 
     def random_data(self):
+        self.totalIterations += 1
+        if self.lenRaceTrack > 9001:
+            limiterChance = 999
+        elif self.lenRaceTrack > 7001:
+            limiterChance = 150
+        elif self.lenRaceTrack > 5001:
+            limiterChance = 25
+        elif self.lenRaceTrack > 4001:
+            limiterChance = 9
+        else:
+            limiterChance = 2
+        all_summ_data = sum(self.data)
         for i_elem in range(self.lengthData):
             if self.colors[i_elem] != get_key(self.scoreboard, max(self.scoreboard.values())):
                 self.data[random.randint(0, self.lengthData - 1)] += random.random() / 5
@@ -85,20 +103,43 @@ class PieChart:
             else:
                 minus = 0
 
-            chance_multi = random.randint(0, 19 - minus)
+            if random.randint(1, limiterChance) == 1:
+                print("L")
+                if self.data[i_elem] > 1550000:
+                    self.data[i_elem] /= random.randint(100, 150)
+                    for i in range(self.lengthData // 2):
+                        self.data[random.randint(0, self.lengthData - 1)] /= 3
+
+            if random.randint(1, limiterChance) == 1:
+                print("L")
+                if self.data[i_elem] / all_summ_data > 0.95:
+                    self.data[i_elem] /= max(self.data) / min(self.data)
+                elif self.data[i_elem] / all_summ_data > 0.85:
+                    self.data[i_elem] /= max(2.5, max(self.data) / (min(self.data) * 10))
+                elif self.data[i_elem] / all_summ_data > 0.7:
+                    self.data[i_elem] /= 2
+                elif self.data[i_elem] / all_summ_data > 0.6:
+                    self.data[i_elem] /= 1.4
+
+            chance_multi = random.randint(0, 179 - minus)
             if chance_multi % 5 == 0:
                 self.data[i_elem] *= 1 + places[self.colors[i_elem]] / 100
             elif chance_multi == 13:
                 self.data[i_elem] *= random.random()
-            if chance_multi == 7:
-                self.data[i_elem] *= (random.random() + 1) + self.luckyMulti[i_elem] / 3
+            if chance_multi == 7 or random.randint(1, 77777 // self.bonusChance[i_elem]) == 1:
+                self.totalMultiChance += 1
+
+                self.data[i_elem] *= (random.random() + 1) + self.luckyMulti[i_elem] / (1.5 + minus * 2)
                 self.luckyMulti[i_elem] += 1
                 if self.luckyMulti[i_elem] > 1:
+                    print(self.bonusChance, self.bonusChance[i_elem])
+                    self.bonusChance[i_elem] = 1
                     s = "{} Combo x{} for {}\n".format(datetime.datetime.now().time(), self.luckyMulti[i_elem], self.colors[i_elem])
                     print(s, end='')
             else:
+                self.bonusChance[i_elem] += 1
                 self.luckyMulti[i_elem] = 0
-            if self.data[i_elem] < 1000:
+            if self.data[i_elem] < 500:
                 self.data[i_elem] *= random.randint(1, 15)
 
         remain_scores = self.data[:]
@@ -119,14 +160,14 @@ class PieChart:
             plus_score = random.random() * 450
             randomIndex = random.randint(0, self.lengthData - 1)
             self.scoreboard[self.colors[randomIndex]] += plus_score
-            print("{} ULTRA EXTRA SUPER {} for {}".format(datetime.datetime.now().time(), plus_score,
+            print("{} ULTRA EXTRA SUPER +{} for {}".format(datetime.datetime.now().time(), plus_score,
                                                           self.colors[randomIndex]))
 
         if random.randint(1, 10**6) == 77:
             plus_score = random.random() * random.randint(999, 1111)
             randomIndex = random.randint(0, self.lengthData - 1)
             self.scoreboard[self.colors[randomIndex]] += plus_score
-            print("{} GODLIKE MEGA ULTRA EXTRA SUPER LUCKY {} for {}".format(datetime.datetime.now().time(), plus_score,
+            print("{} GODLIKE MEGA ULTRA EXTRA SUPER LUCKY +{} for {}".format(datetime.datetime.now().time(), plus_score,
                                                           self.colors[randomIndex]))
 
     def draw_racetrack(self):
@@ -194,7 +235,8 @@ class PieChart:
         for color, value in sort_dict.items():
             percent = value / total_sum * 100
             self.canvas.create_rectangle(x, y, x + 20, y + 20, fill=color)
-            self.canvas.create_text(x + 30, y + 10, text=f"{round(percent, 2)}%", fill="black", font=("Arial", 11), anchor="w")
+            # self.canvas.create_text(x + 30, y + 10, text=f"{round(percent, 2)}%", fill="black", font=("Arial", 11), anchor="w")
+            self.canvas.create_text(x + 30, y + 10, text=f"{round(value, 2)}", fill="black", font=("Arial", 11), anchor="w")
             x += 85
 
 
@@ -222,7 +264,7 @@ if __name__ == "__main__":
     colors = ['red', 'green', 'lightblue', 'orange', 'pink', 'yellow', 'silver', 'indigo', 'cyan', 'snow', 'springgreen', 'chocolate']
     colorsName = {'red': 'Blood', 'green': 'Nature', 'lightblue': 'Ice', 'orange': 'Flame', 'pink': 'Rose', 'yellow': 'Lemon',
                   'silver':'Steel dick', 'indigo':'Night', 'cyan':'Wave', 'snow':'Snow', 'springgreen':'Toxic', 'chocolate':'Chocolate'}
-    data = [1000 for _ in range(len(colors))]
+    data = [500 for _ in range(len(colors))]
 
 
     colorLabels = list()
