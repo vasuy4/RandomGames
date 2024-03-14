@@ -1,4 +1,3 @@
-
 import datetime
 import random
 import time
@@ -239,8 +238,8 @@ class PieChart:
         for color, value in sort_dict.items():
             percent = value / total_sum * 100
             self.canvas.create_rectangle(x, y, x + 20, y + 20, fill=color)
-            # self.canvas.create_text(x + 30, y + 10, text=f"{round(percent, 2)}%", fill="black", font=("Arial", 11), anchor="w")
-            self.canvas.create_text(x + 30, y + 10, text=f"{round(value, 2)}", fill="black", font=("Arial", 11), anchor="w")
+            self.canvas.create_text(x + 30, y + 10, text=f"{round(percent, 2)}%", fill="black", font=("Arial", 11), anchor="w")
+            #self.canvas.create_text(x + 30, y + 10, text=f"{round(value, 2)}", fill="black", font=("Arial", 11), anchor="w")
             x += 85
 
 
