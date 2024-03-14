@@ -7,15 +7,28 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 from os import getcwd
 
+from typing import Any, List, Dict
 
-def get_key(d, value):
+
+def get_key(d: Dict[Any, Any], value: Any):
+    """Получить ключ по значению"""
     for k, v in d.items():
         if v == value:
             return k
 
 
 class PieChart:
-    def __init__(self, root, data: list, colors, colorsName, start_angle=90, len_track=1000):
+    def __init__(self, root: tk.Tk, data: List[int], colors: List[str], colorsName: Dict[str, str], start_angle=90,
+                 len_track=1000):
+        """
+        Инициализация класса меню гонки
+        :param root: корень окна ткинтера
+        :param data: список скоростей коней (сравнивается в процентах)
+        :param colors: список цветов коней
+        :param colorsName: словарь, где ключ - цвет, значение - имя коня
+        :param start_angle: начальный угол круговой диаграммы
+        :param len_track: длина гоночной трассы
+        """
         self.root = root
         self.root.geometry('1600x830')
         self.canvas = tk.Canvas(root, width=1600, height=830)
@@ -24,14 +37,14 @@ class PieChart:
         self.colors = colors
         self.colorsName = colorsName
         self.start_angle = start_angle
-        self.total = sum(data)
-        self.lengthData = len(data)
-        self.luckyMulti = [0 for _ in range(self.lengthData)]
-        self.bonusChance = [1 for _ in range(self.lengthData)]
-        self.scoreboard = dict(zip(colors, [0 for _ in range(len(data))]))
-        self.positionColor = dict(zip(colors, [0 for _ in range(len(data))]))
-        self.lenRaceTrack = len_track
-        self.horse_images = {}
+        self.total = sum(data)  # сумма всех скоростей
+        self.lengthData = len(data)  # количество коней
+        self.luckyMulti = [0 for _ in range(self.lengthData)]  # дополнительный коэф. умножения
+        self.bonusChance = [1 for _ in range(self.lengthData)]  # увеличение шанса пока не случится x2 Multi
+        self.scoreboard = dict(zip(colors, [0 for _ in range(len(data))]))  # таблица лидеров (ключ - цвет, знач - пройденный участок)
+        self.positionColor = dict(zip(colors, [0 for _ in range(len(data))]))  # словарь коней (ключей) с их расположением в окне в пикселях (знач)
+        self.lenRaceTrack = len_track  # длина гоночной трассы
+        self.horse_images = {}  # изображение коней
         for i in range(len(data)):
             name_file = "{direct}/images/horses/{color}.png".format(direct=getcwd(), color=colors[i])
             img = Image.open(name_file)
@@ -45,11 +58,12 @@ class PieChart:
             faceImage = ImageTk.PhotoImage(imgFace)
             self.horse_images[colors[i] + "Face"] = faceImage
 
-        self.totalIterations = 0
-        self.totalMultiChance = 0
-        self.draw_pie_chart()
+        self.totalIterations = 0  # счётчик прошедших итераций (для статистики)
+        self.totalMultiChance = 0  # счётчик случившихся мультибонусов (тоже для статистики)
+        self.draw_pie_chart()  # начинаем отображение гонки
 
     def draw_pie_chart(self):
+        """Регулярное обновление круговой диаграммы, пока кто-то не финиширует и запуск остальных функций"""
         self.canvas.delete("all")
         end_angle = self.start_angle
         for idx, value in enumerate(self.data):
@@ -243,7 +257,9 @@ class PieChart:
             x += 85
 
 
-def create_pie_chart(root, data, colors, startBtn, entry_len_race, labelChoose, colorLabels, imageLabels, colorsName):
+def create_pie_chart(root: tk.Tk, data: List[int], colors: List[str], startBtn: tk.Button, entry_len_race: tk.Entry,
+                     labelChoose: tk.Label, colorLabels: List[tk.Label], imageLabels: List[ttk.Label],
+                     colorsName: Dict[str, str]):
     len_track = entry_len_race.get()
     if not len_track:
         len_track = 2500
@@ -261,47 +277,46 @@ def create_pie_chart(root, data, colors, startBtn, entry_len_race, labelChoose, 
 
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    root.geometry('860x860')
+    rootM = tk.Tk()
+    rootM.geometry('860x860')
 
-    colors = ['red', 'green', 'lightblue', 'orange', 'pink', 'yellow', 'silver', 'indigo', 'cyan', 'snow', 'springgreen', 'chocolate']
-    colorsName = {'red': 'Blood', 'green': 'Nature', 'lightblue': 'Ice', 'orange': 'Flame', 'pink': 'Rose', 'yellow': 'Lemon',
+    colorsM = ['red', 'green', 'lightblue', 'orange', 'pink', 'yellow', 'silver', 'indigo', 'cyan', 'snow', 'springgreen', 'chocolate']
+    colorsNameM = {'red': 'Blood', 'green': 'Nature', 'lightblue': 'Ice', 'orange': 'Flame', 'pink': 'Rose', 'yellow': 'Lemon',
                   'silver':'Steel dick', 'indigo':'Night', 'cyan':'Wave', 'snow':'Snow', 'springgreen':'Toxic', 'chocolate':'Chocolate'}
-    data = [500 for _ in range(len(colors))]
+    dataM = [500 for _ in range(len(colorsM))]
 
+    colorLabelsM = list()
+    imageLabelsM = []
 
-    colorLabels = list()
-    imageLabels = []
-
-    image_files = ['{}/images/horses/'.format(getcwd()) + color + 'Face.png' for color in colors]
-    images = [tk.PhotoImage(file=image_file) for image_file in image_files]
+    image_filesM = ['{}/images/horses/'.format(getcwd()) + color + 'Face.png' for color in colorsM]
+    imagesM = [tk.PhotoImage(file=image_file) for image_file in image_filesM]
 
     row_index = 0
     column_index = 0
 
-    for i_color, image in zip(colors, images):
-        name = colorsName[i_color]
-        labelColor = ttk.Label(root, text=name, font='Times 20', background=i_color)
+    for i_color, image in zip(colorsM, imagesM):
+        name = colorsNameM[i_color]
+        labelColor = ttk.Label(rootM, text=name, font='Times 20', background=i_color)
         labelColor.grid(row=column_index, column=2 * (row_index % 3), padx=5, pady=5)
-        colorLabels.append(labelColor)
+        colorLabelsM.append(labelColor)
 
-        labelImage = ttk.Label(root, image=image)
+        labelImage = ttk.Label(rootM, image=image)
         labelImage.grid(row=column_index+1, column=2 * (row_index % 3), padx=5, pady=5)
-        imageLabels.append(labelImage)
+        imageLabelsM.append(labelImage)
 
         row_index += 1
         if row_index % 3 == 0:
             column_index += 2
 
-    labelChoose = ttk.Label(root, text='Length track:', font='Times 20')
-    labelChoose.grid(row=0, column=5)
+    labelChooseM = ttk.Label(rootM, text='Length track:', font='Times 20')
+    labelChooseM.grid(row=0, column=5)
 
-    entry_len_race = tk.Entry(root, width=20)
-    entry_len_race.grid(row=1, column=5)
+    entry_len_raceM = tk.Entry(rootM, width=20)
+    entry_len_raceM.grid(row=1, column=5)
 
-    startBtn = tk.Button(root, text="START", font='Times 20', command=lambda: create_pie_chart(root, data, colors, startBtn,
-                                                                                               entry_len_race, labelChoose,
-                                                                                               colorLabels, imageLabels, colorsName))
-    startBtn.grid(row=2, column=5)
+    startBtnM = tk.Button(rootM, text="START", font='Times 20', command=lambda: create_pie_chart(rootM, dataM, colorsM, startBtnM,
+                                                                                               entry_len_raceM, labelChooseM,
+                                                                                               colorLabelsM, imageLabelsM, colorsNameM))
+    startBtnM.grid(row=2, column=5)
 
-    root.mainloop()
+    rootM.mainloop()
