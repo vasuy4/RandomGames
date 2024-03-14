@@ -105,6 +105,10 @@ class PieChart:
 
             if random.randint(1, limiterChance) == 1:
                 print("L")
+                if self.data[i_elem] > 5000000:
+                    self.data[i_elem] /= random.randint(1000, 1500)
+                    for i in range(self.lengthData - 1):
+                        self.data[i] /= 1000
                 if self.data[i_elem] > 1550000:
                     self.data[i_elem] /= random.randint(100, 150)
                     for i in range(self.lengthData // 2):
