@@ -81,7 +81,7 @@ class PieChart:
                 i_place += 1
 
             if max(places.values()) > 6 and self.lenRaceTrack < 5001:
-                minus = places[self.colors[i_elem]]
+                minus = random.randint(0, int(places[self.colors[i_elem]] / 2))
             else:
                 minus = 0
 
@@ -103,12 +103,31 @@ class PieChart:
 
         remain_scores = self.data[:]
         sum_scores = sum(self.data)
+        threeLargest = 0
         while remain_scores:
             for idx, value in enumerate(self.data):
                 if remain_scores and value == max(remain_scores):
+                    threeLargest += 1
                     plus_score = 3/100 * (max(remain_scores) / sum_scores * 100)
                     self.scoreboard[self.colors[idx]] += plus_score + random.random() / 2
                     remain_scores.remove(value)
+                    if threeLargest <= 3 and random.randint(1, 10000) == 3:
+                        plus_score = random.random() * 200 * random.randint(-1, 1)
+                        self.scoreboard[self.colors[idx]] += plus_score
+                        print("{} EXTRA SUPER {} for {}".format(datetime.datetime.now().time(), plus_score, self.colors[idx]))
+        if random.randint(1, 10000) == 100:
+            plus_score = random.random() * 450
+            randomIndex = random.randint(0, self.lengthData - 1)
+            self.scoreboard[self.colors[randomIndex]] += plus_score
+            print("{} ULTRA EXTRA SUPER {} for {}".format(datetime.datetime.now().time(), plus_score,
+                                                          self.colors[randomIndex]))
+
+        if random.randint(1, 10**6) == 77:
+            plus_score = random.random() * random.randint(999, 1111)
+            randomIndex = random.randint(0, self.lengthData - 1)
+            self.scoreboard[self.colors[randomIndex]] += plus_score
+            print("{} GODLIKE MEGA ULTRA EXTRA SUPER LUCKY {} for {}".format(datetime.datetime.now().time(), plus_score,
+                                                          self.colors[randomIndex]))
 
     def draw_racetrack(self):
         x = 820
@@ -157,7 +176,6 @@ class PieChart:
         y = 5
         sorted_dict = dict(sorted(self.scoreboard.items(), key=lambda item: item[1], reverse=True))
         for color, score in sorted_dict.items():
-            # self.canvas.create_rectangle(x, y, x + 20, y + 20, fill=color)
             horseImage = self.horse_images[color + "Face"]
             self.canvas.create_image(x, y, image=horseImage, anchor='nw')
 
