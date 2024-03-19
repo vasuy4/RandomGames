@@ -117,7 +117,6 @@ class PieChart:
                 minus = 0
 
             if random.randint(1, limiterChance) == 1:
-                print("L")
                 if self.data[i_elem] > 5000000:
                     self.data[i_elem] /= random.randint(1000, 1500)
                     for i in range(self.lengthData - 1):
@@ -128,7 +127,6 @@ class PieChart:
                         self.data[random.randint(0, self.lengthData - 1)] /= 3
 
             if random.randint(1, limiterChance) == 1:
-                print("L")
                 if self.data[i_elem] / all_summ_data > 0.95:
                     self.data[i_elem] /= max(self.data) / min(self.data)
                 elif self.data[i_elem] / all_summ_data > 0.85:
@@ -276,8 +274,8 @@ def create_pie_chart(root: tk.Tk, data: List[int], colors: List[str], startBtn: 
     pie_chart = PieChart(root, data, colors, len_track=len_track, colorsName=colorsName)
 
 
-if __name__ == "__main__":
-    rootM = tk.Tk()
+def start_horse_race(rootM):
+    # rootM = tk.Tk()
     rootM.geometry('860x860')
 
     colorsM = ['red', 'green', 'lightblue', 'orange', 'pink', 'yellow', 'silver', 'indigo', 'cyan', 'snow', 'springgreen', 'chocolate']
@@ -290,7 +288,6 @@ if __name__ == "__main__":
 
     image_filesM = ['{}/images/horses/'.format(getcwd()) + color + 'Face.png' for color in colorsM]
     imagesM = [tk.PhotoImage(file=image_file) for image_file in image_filesM]
-
     row_index = 0
     column_index = 0
 
@@ -320,3 +317,7 @@ if __name__ == "__main__":
     startBtnM.grid(row=2, column=5)
 
     rootM.mainloop()
+
+if __name__ == "__main__":
+    rootM = tk.Tk()
+    start_horse_race(rootM)
